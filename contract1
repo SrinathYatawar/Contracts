@@ -1,0 +1,69 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.11;
+
+contract CompanySalary{
+     struct Worker{
+         address EmployeeAddress;
+         uint Amount;
+         string Name;
+         uint APID;
+         uint256 timestamp;
+         bool Ispaid;
+     }
+     
+
+     struct Comapny{
+          uint256 CompanyFunds;
+          bool CompanyReg;
+          Worker[] WorkerAccount;
+     }
+    mapping(address=>Comapny) Companies;
+    uint lastRun;
+     function AddMoney()external payable{
+     Companies[msg.sender].CompanyReg=true;
+      Companies[msg.sender].CompanyFunds+=msg.value;
+   }
+    function ComapanyMoneyAmount()public view returns(uint){
+       require( Companies[msg.sender].CompanyReg,"You Are Not Authenticated To View This Sorry!.");
+        return  Companies[msg.sender].CompanyFunds;
+   }
+
+   mapping(address=>Worker[])DataCompany;
+
+   function AddDetails(address _worker,string memory _Name,uint _Amount,uint _APID)public{
+         require( Companies[msg.sender].CompanyReg,"You Are Not Authenticated To AddDetails In This Sorry!.");
+        Companies[msg.sender].WorkerAccount.push(Worker(_worker,_Amount,_Name,_APID,block.timestamp,false));
+         DataCompany[msg.sender]= Companies[msg.sender].WorkerAccount;
+   }
+
+  function PaySalary()public payable{
+         require(Companies[msg.sender].CompanyReg,"You Are Not Authenticated To Pay Salary To Employees IT Is Illegal!.");
+              require(block.timestamp - lastRun > 120 minutes , 'Need to wait 120 minutees');
+           for(uint i=0; i<  Companies[msg.sender].WorkerAccount.length; i++){
+                if(!Companies[msg.sender].WorkerAccount[i].Ispaid){
+                require(Companies[msg.sender].CompanyFunds>=Companies[msg.sender].WorkerAccount[i].Amount,"You Does Not Have Sufficient Funds To Make Futher Payments");
+                 Companies[msg.sender].WorkerAccount[i].Ispaid=true;
+                 DataCompany[msg.sender]= Companies[msg.sender].WorkerAccount;
+                Companies[msg.sender].CompanyFunds-=  Companies[msg.sender].WorkerAccount[i].Amount;
+                address _to=Companies[msg.sender].WorkerAccount[i].EmployeeAddress;
+               payable(_to).transfer(Companies[msg.sender].WorkerAccount[i].Amount);
+                }
+           }
+      }
+  function CompanyEmployees()public view returns(Worker[] memory){
+  require(Companies[msg.sender].CompanyReg,"You Are Not Authenticated.");
+       return Companies[msg.sender].WorkerAccount;
+  }
+   
+   function ChangeTheSalaryState()public{
+         require(Companies[msg.sender].CompanyReg,"You Are Not Authenticated.");
+         require(block.timestamp - lastRun > 120 minutes , 'Need to wait 120 minutes');
+            for(uint i=0; i<  Companies[msg.sender].WorkerAccount.length; i++){
+                    Companies[msg.sender].WorkerAccount[i].Ispaid=false;
+                 DataCompany[msg.sender]= Companies[msg.sender].WorkerAccount;
+  }
+     lastRun=block.timestamp;
+}
+
+
+}
