@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.11;
+
+contract CompanySalary{
+     struct Worker{
+         address EmployeeAddress;
+         uint Amount;
+         string Name;
+         uint APID;
+         uint256 timestamp;
+         bool Ispaid;
+     }
+
+     uint256 ComapanyMoney;
+
+   function ComapanyMoneyAmount()public view returns(uint){
+     //  require(Owner==msg.sender,"You Are Not Authenticated To View This Sorry!.");
+        return ComapanyMoney;
+   }
+   function AddFunds()public payable{
+      //  require(Owner==msg.sender,"You Are Not Authenticated To AddFunds In This Sorry!.");
+        ComapanyMoney+=msg.value;
+   }
+ mapping(address=>Worker) WorkerAccount;
+
+   function AddDetails(address _worker,string memory _Name,uint _Amount,uint _APID)public{
+       ///  require(Owner==msg.sender,"You Are Not Authenticated To AddDetails In This Sorry!.");
+            WorkerAccount[_worker].EmployeeAddress=_worker;
+            WorkerAccount[_worker].Amount=_Amount;
+            WorkerAccount[_worker].Name=_Name;
+            WorkerAccount[_worker].APID=_APID;
+            WorkerAccount[_worker].timestamp=block.timestamp;
+
+   }
+
+    function ShowDataOfWorkers(uint _APID)public view returns(Worker memory){
+     //    require(Owner==msg.sender,"You Are Not Authenticated To SeeEmployeesDetsils In This Sorry!.");
+           return WorkerAccount[];
+    }
+  
+  
+  function PaySalary()public{
+        // require(Companies[msg.sender].CompanyReg,"You Are Not Authenticated To Pay Salary To Employees IT Is Illegal!.");
+           
+           for(uint i=0; i<WorkerAccount.length; i++){
+                if(!WorkerAccount[i].Ispaid){
+             //   require(Companies[msg.sender].CompanyFunds>=  Companies[msg.sender].WorkerAccount[i].Amount,"You Does Not Have Sufficient Funds To Make Futher Payments");
+                WorkerAccount[i].Ispaid=true;
+              ComapanyMoney-=WorkerAccount[i].Amount;
+                }
+           }
+      }
+
+}
